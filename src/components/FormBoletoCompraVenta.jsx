@@ -82,7 +82,6 @@ export function FormBoletoCompraVenta() {
     setData({ ...data, [e.target.name]: e.target.value });
   };
 
-  // Manejador específico para los componentes Select
   const handleSelectChange = (name, value) => {
     setData({ ...data, [name]: value });
   };
@@ -113,14 +112,14 @@ export function FormBoletoCompraVenta() {
   };
 
   return (
-    <div className="space-y-8 p-8 bg-white text-black border border-gray-200 rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold border-b-2 border-black pb-3">
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-8 bg-white text-black border border-gray-200 rounded-xl shadow-lg">
+      <h2 className="text-xl sm:text-2xl font-bold border-b-2 border-black pb-3">
         Boleto de Compraventa y Datero
       </h2>
 
       {/* BLOQUE VENDEDOR Y COMPRADOR */}
-      <div className="grid grid-cols-2 gap-8">
-        <div className="space-y-4 bg-gray-50 p-5 rounded-lg border border-gray-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+        <div className="space-y-4 bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200">
           <h3 className="font-bold text-red-600 uppercase tracking-wide">
             Datos del Vendedor
           </h3>
@@ -166,7 +165,7 @@ export function FormBoletoCompraVenta() {
           </div>
         </div>
 
-        <div className="space-y-4 bg-gray-50 p-5 rounded-lg border border-gray-200">
+        <div className="space-y-4 bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200">
           <h3 className="font-bold text-red-600 uppercase tracking-wide">
             Datos del Comprador
           </h3>
@@ -214,11 +213,11 @@ export function FormBoletoCompraVenta() {
       </div>
 
       {/* BLOQUE VEHICULO */}
-      <div className="space-y-4 bg-gray-50 p-5 rounded-lg border border-gray-200">
+      <div className="space-y-4 bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200">
         <h3 className="font-bold text-red-600 uppercase tracking-wide">
           Datos del Vehículo
         </h3>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
             <Label className="font-semibold">Marca</Label>
             <Select
@@ -305,8 +304,8 @@ export function FormBoletoCompraVenta() {
       </div>
 
       {/* BLOQUE OPERACIÓN Y FECHAS */}
-      <div className="grid grid-cols-2 gap-8">
-        <div className="space-y-4 bg-gray-50 p-5 rounded-lg border border-gray-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+        <div className="space-y-4 bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200">
           <h3 className="font-bold text-red-600 uppercase tracking-wide">
             Operación
           </h3>
@@ -345,11 +344,11 @@ export function FormBoletoCompraVenta() {
           </div>
         </div>
 
-        <div className="space-y-4 bg-gray-50 p-5 rounded-lg border border-gray-200">
+        <div className="space-y-4 bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200">
           <h3 className="font-bold text-red-600 uppercase tracking-wide">
             Fechas (2026)
           </h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="font-semibold">Día Libre Deuda</Label>
               <Input
@@ -387,11 +386,11 @@ export function FormBoletoCompraVenta() {
       </div>
 
       {/* BLOQUE DATERO */}
-      <div className="space-y-4 bg-gray-50 p-5 rounded-lg border border-gray-200 border-t-4 border-t-black">
+      <div className="space-y-4 bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200 border-t-4 border-t-black">
         <h3 className="font-bold text-red-600 uppercase tracking-wide">
           Datos Adicionales (Datero Agencia)
         </h3>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label className="font-semibold">Titular</Label>
             <Input
@@ -474,7 +473,7 @@ export function FormBoletoCompraVenta() {
           disabled={loading}
           size="lg"
           onClick={handleDescargaDoble}
-          className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-6 text-lg shadow-lg"
+          className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-6 text-lg shadow-lg w-full sm:w-auto"
         >
           {loading ? "Generando archivos..." : "Descargar Ambos PDFs"}
         </Button>
