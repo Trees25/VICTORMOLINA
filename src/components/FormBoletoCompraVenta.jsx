@@ -204,7 +204,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Nombre Completo</Label>
             <Input
               name="vendedorNombre"
-              value={data.vendedorNombre}
+              value={data.vendedorNombre || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -213,7 +213,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Documento N°</Label>
             <Input
               name="vendedorDni"
-              value={data.vendedorDni}
+              value={data.vendedorDni || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -222,7 +222,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Domicilio</Label>
             <Input
               name="vendedorDomicilio"
-              value={data.vendedorDomicilio}
+              value={data.vendedorDomicilio || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -231,7 +231,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Localidad</Label>
             <Input
               name="vendedorLocalidad"
-              value={data.vendedorLocalidad}
+              value={data.vendedorLocalidad || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -240,7 +240,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Teléfono</Label>
             <Input
               name="vendedorTel"
-              value={data.vendedorTel}
+              value={data.vendedorTel || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -255,7 +255,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Nombre Completo</Label>
             <Input
               name="compradorNombre"
-              value={data.compradorNombre}
+              value={data.compradorNombre || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -264,7 +264,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Documento N°</Label>
             <Input
               name="compradorDni"
-              value={data.compradorDni}
+              value={data.compradorDni || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -273,7 +273,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Domicilio</Label>
             <Input
               name="compradorDomicilio"
-              value={data.compradorDomicilio}
+              value={data.compradorDomicilio || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -282,7 +282,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Localidad</Label>
             <Input
               name="compradorLocalidad"
-              value={data.compradorLocalidad}
+              value={data.compradorLocalidad || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -291,7 +291,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Teléfono</Label>
             <Input
               name="compradorTel"
-              value={data.compradorTel}
+              value={data.compradorTel || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -327,7 +327,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Modelo</Label>
             <Input
               name="vehiculoModelo"
-              value={data.vehiculoModelo}
+              value={data.vehiculoModelo || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -336,7 +336,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Tipo</Label>
             <Input
               name="vehiculoTipo"
-              value={data.vehiculoTipo}
+              value={data.vehiculoTipo || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -345,7 +345,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Dominio (Patente)</Label>
             <Input
               name="vehiculoDominio"
-              value={data.vehiculoDominio}
+              value={data.vehiculoDominio || ""}
               onChange={handleChange}
               className="bg-white border-red-300 focus-visible:ring-red-600 uppercase"
             />
@@ -354,7 +354,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Motor N°</Label>
             <Input
               name="vehiculoMotor"
-              value={data.vehiculoMotor}
+              value={data.vehiculoMotor || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600 uppercase"
             />
@@ -363,7 +363,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Chasis N°</Label>
             <Input
               name="vehiculoChasis"
-              value={data.vehiculoChasis}
+              value={data.vehiculoChasis || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600 uppercase"
             />
@@ -390,7 +390,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Inscripción Inicial</Label>
             <Input
               name="vehiculoInsc"
-              value={data.vehiculoInsc}
+              value={data.vehiculoInsc || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -408,7 +408,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Monto Venta</Label>
             <Input
               name="precio"
-              value={data.precio}
+              value={data.precio || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -417,7 +417,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Forma de Pago</Label>
             <Input
               name="formaPago"
-              value={data.formaPago}
+              value={data.formaPago || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -426,19 +426,19 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Gastos de Transferencia</Label>
             <Input
               name="gastoTransferencia"
-              value={data.gastoTransferencia}
+              value={data.gastoTransferencia || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
           </div>
-          {tipo === "consignación" && (
+          {tipo === "consignacion" && (
             <div className="space-y-2">
               <Label className="font-semibold">
                 Días limite para Transferencia
               </Label>
               <Input
                 name="fechaTrans"
-                value={data.fechaTrans}
+                value={data.fechaTrans || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -448,7 +448,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
             <Label className="font-semibold">Observaciones</Label>
             <Input
               name="observaciones"
-              value={data.observaciones}
+              value={data.observaciones || ""}
               onChange={handleChange}
               className="bg-white focus-visible:ring-red-600"
             />
@@ -464,7 +464,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Día Libre Deuda</Label>
               <Input
                 name="libreDeudaDia"
-                value={data.libreDeudaDia}
+                value={data.libreDeudaDia || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -473,7 +473,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Mes Libre Deuda</Label>
               <Input
                 name="libreDeudaMes"
-                value={data.libreDeudaMes}
+                value={data.libreDeudaMes || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -482,7 +482,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Día Firma (San Juan)</Label>
               <Input
                 name="firmaDia"
-                value={data.firmaDia}
+                value={data.firmaDia || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -491,7 +491,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Mes Firma (San Juan)</Label>
               <Input
                 name="firmaMes"
-                value={data.firmaMes}
+                value={data.firmaMes || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -511,7 +511,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Titular</Label>
               <Input
                 name="titular"
-                value={data.titular}
+                value={data.titular || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -520,7 +520,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">CUIL</Label>
               <Input
                 name="cuil"
-                value={data.cuil}
+                value={data.cuil || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -529,7 +529,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Fecha Nac.</Label>
               <Input
                 name="fechaNac"
-                value={data.fechaNac}
+                value={data.fechaNac || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -538,7 +538,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Cónyuge</Label>
               <Input
                 name="conyuge"
-                value={data.conyuge}
+                value={data.conyuge || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -547,7 +547,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">DNI Cónyuge</Label>
               <Input
                 name="dniConyuge"
-                value={data.dniConyuge}
+                value={data.dniConyuge || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -556,7 +556,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Teléfonos</Label>
               <Input
                 name="telefonosDatero"
-                value={data.telefonosDatero}
+                value={data.telefonosDatero || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -565,7 +565,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Correo Electrónico</Label>
               <Input
                 name="correo"
-                value={data.correo}
+                value={data.correo || ""}
                 type="email"
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
@@ -575,7 +575,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Ocupación</Label>
               <Input
                 name="ocupacion"
-                value={data.ocupacion}
+                value={data.ocupacion || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />
@@ -584,7 +584,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               <Label className="font-semibold">Domicilio de DNI</Label>
               <Input
                 name="domicilioDni"
-                value={data.domicilioDni}
+                value={data.domicilioDni || ""}
                 onChange={handleChange}
                 className="bg-white focus-visible:ring-red-600"
               />

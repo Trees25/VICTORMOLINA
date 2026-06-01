@@ -103,13 +103,13 @@ function App() {
           </Button>
           <Button
             className={
-              activeTab === "consignación"
+              activeTab === "consignacion"
                 ? "bg-red-600 hover:bg-red-700 text-white font-bold shadow-md w-full sm:w-auto"
                 : "bg-white text-black border-2 border-gray-300 hover:border-red-600 hover:text-red-600 w-full sm:w-auto"
             }
-            onClick={() => setActiveTab("consignación")}
+            onClick={() => setActiveTab("consignacion")}
           >
-            Boleto de Consignación
+            Boleto de consignacion
           </Button>
           <Button
             className={
@@ -126,8 +126,8 @@ function App() {
         <main>
           {activeTab === "compra" && <FormBoletoCompraVenta tipo="compra" />}
           {activeTab === "venta" && <FormBoletoCompraVenta tipo="venta" />}
-          {activeTab === "consignación" && (
-            <FormBoletoCompraVenta tipo="consignación" />
+          {activeTab === "consignacion" && (
+            <FormBoletoCompraVenta tipo="consignacion" />
           )}
           {activeTab === "dashboard" && <Dashboard />}
         </main>

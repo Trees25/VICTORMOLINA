@@ -227,8 +227,7 @@ export const BoletoConsignación = ({ data, logoUrl }) => (
           <Text style={styles.bold}>
             {data.precio || "………………… …………………………………………………………………"}
           </Text>{" "}
-          (Pesos
-          <Text style={styles.bold}>{numeroALetras(data.precio)}</Text>
+          (Pesos <Text style={styles.bold}>{numeroALetras(data.precio)}</Text>
           {") "}
           Pagaderos de la siguiente forma:{" "}
           <Text style={styles.bold}>
