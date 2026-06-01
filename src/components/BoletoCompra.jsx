@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const BoletoPDF = ({ data, logoUrl }) => (
+export const BoletoCompra = ({ data, logoUrl }) => (
   <Document>
     <Page size="A4" style={styles.page}>
       <View style={styles.outerBorder}>
@@ -155,7 +155,7 @@ export const BoletoPDF = ({ data, logoUrl }) => (
           </Text>
         </Text>
 
-        <Text style={styles.paragraph}>
+        {/* <Text style={styles.paragraph}>
           El comprador deberá atender estrictamente el vencimiento de las
           obligaciones contraídas, si las hubiere, ya que la falta de pago de
           uno de los documentos comerciales suscriptos, facultará al vendedor a
@@ -171,40 +171,43 @@ export const BoletoPDF = ({ data, logoUrl }) => (
           secuestro inmediato del bien, renunciando el comprador a iniciar
           acciones que le pudieren corresponder por los probables daños y
           perjuicios que se ocasionaron.
-        </Text>
+        </Text>*/}
 
         <Text style={styles.paragraph}>
-          El vendedor se responsabiliza ampliamente por lo vendido, declarando
-          que lo vendido no está gravado con embargo alguno ni prenda (Ley
-          12962) ni pesa sobre el mismo ningún impedimento que afecte mi derecho
-          a disponer su venta, como también lo que pudiera adeudar en concepto
-          de patentes o impuestos hasta el día{" "}
+          El VENDEDOR se responsabiliza ampliamente por lo vendido, declarando
+          bajo juramento que el vehículo no está gravado con embargo alguno,
+          prenda (Ley 12.962), ni pesa sobre el mismo ningún impedimento legal
+          ni de inhibición que afecte el derecho a disponer de su venta.
+          Asimismo, el VENDEDOR se hace cargo de la totalidad de lo que pudiera
+          adeudar el vehículo en concepto de patentes, impuestos, multas o tasas
+          hasta el día{" "}
           <Text style={styles.bold}>{data.libreDeudaDia || "……"}</Text> de{" "}
           <Text style={styles.bold}>{data.libreDeudaMes || "…………"}</Text> de
-          2026.-
+          2026.
         </Text>
 
-        <Text style={styles.paragraph}>
+        {/* <Text style={styles.paragraph}>
           EL GASTO DE TRANSFERENCIA A CARGO DEL COMPRADOR ES DE:{" "}
           <Text style={styles.bold}>
             {data.gastoTransferencia || "…………………………………………"}
           </Text>
-        </Text>
+        </Text>*/}
 
         <Text style={styles.paragraph}>
-          Esta unidad se entrega en el estado de uso en que se encuentra y que
-          el comprador declara conocer, haciéndose responsable Civil y
-          criminalmente a partir de la fecha y hora de efectuada esta venta por
-          cualquier accident, daño y/o perjuicio que pudiera ocasionar, el
-          vehículo es recibido en este acto con su documentación al día. Con
-          absoluta conformidad del comprador.-
+          El VENDEDOR garantiza y se hace plenamente responsable por el estado
+          mecánico, estructural y de funcionamiento general del vehículo,
+          asumiendo cualquier reclamo por vicios ocultos, defectos o fallas
+          preexistentes a este acto. El COMPRADOR (la Agencia) solo asume la
+          responsabilidad civil y criminal por el uso del vehículo a partir de
+          la fecha y hora de efectuada la entrega del mismo. El coche es
+          recibido con su documentación al día.
         </Text>
 
         <Text style={styles.paragraph}>
           En San Juan a los{" "}
           <Text style={styles.bold}>{data.firmaDia || "……"}</Text> días del mes
           de <Text style={styles.bold}>{data.firmaMes || "…………"}</Text> de 2026,
-          se firman dos ejemplares de un mismo tenor y a un solo efecto.-
+          se firman dos ejemplares de un mismo tenor y a un solo efecto.
         </Text>
 
         <View style={styles.observacionesContainer}>
