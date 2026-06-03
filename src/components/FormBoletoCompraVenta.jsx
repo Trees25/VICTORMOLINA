@@ -191,7 +191,9 @@ export default function FormBoletoCompraVenta({ tipo }) {
           ? "Boleto de Compra"
           : tipo === "venta"
             ? "Boleto de Venta"
-            : "Boleto de Consignación"}
+            : tipo === "consignacion"
+              ? "Boleto de Consignación"
+              : "Boleto de Talonario"}
       </h2>
 
       {/* BLOQUE VENDEDOR Y COMPRADOR */}

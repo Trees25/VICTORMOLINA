@@ -1,6 +1,6 @@
 // src/lib/db.js
 import { supabase } from "@/lib/supabase";
-
+import { numeroALetras } from "@/lib/numeros";
 // Convierte "DD/MM/YYYY" o "DD-MM-YYYY" a "YYYY-MM-DD"
 const formatearFechaSQL = (fechaStr) => {
   if (!fechaStr) return null;
@@ -105,6 +105,74 @@ export async function guardarOperacionEnBD(data, tipoOperacion) {
     console.log("Operación guardada con éxito en Supabase");
   } catch (error) {
     console.error("Error en la base de datos:", error);
+    throw error;
+  }
+}
+export async function guardarPagareEnBD(datos) {
+  try {
+    // 1. Crear o Actualizar Cliente (Deudor)
+    let clienteId = null;
+    if (datos.clienteDni) {
+      const { data: cliente, error: errCliente } = await supabase
+        .from("clientes")
+        .upsert(
+          {
+            dni: datos.clienteDni,
+            nombre_completo: datos.clienteNombre,
+            domicilio: datos.clienteDomicilio,
+            localidad: datos.clienteLocalidad,
+            telefono: datos.clienteTel,
+          },
+          { onConflict: "dni" },
+        )
+        .select("id")
+        .single();
+
+      if (errCliente) throw errCliente;
+      clienteId = cliente.id;
+    } else {
+      throw new Error(
+        "El DNI del cliente es obligatorio para registrar la deuda.",
+      );
+    }
+
+    // 2. Limpiar variables numéricas
+    const montoLimpio = parseFloat(String(datos.monto).replace(/\D/g, "") || 0);
+    const nroCuota = parseInt(datos.numeroCuotaPaga || 1);
+    const totalCuotas = parseInt(datos.numeroCuotas || 1);
+    if (nroCuota > totalCuotas) {
+      alert("no coincide el nro de cuota con la cantidad");
+      return false;
+    }
+    // 1. Evaluás la lógica antes
+    let estadoDefinitivo = "pendiente";
+
+    if (datos.numeroCuotaPaga === datos.numeroCuotas) {
+      estadoDefinitivo = "pagado";
+    } else if (datos.numeroCuotas > datos.numeroCuotaPaga) {
+      estadoDefinitivo = "pendiente";
+    }
+
+    // 3. Insertar Pagaré
+    const { error: errPagare } = await supabase.from("pagares").insert({
+      cliente_id: clienteId,
+      nro_cuota: nroCuota,
+      total_cuotas: totalCuotas,
+      monto: montoLimpio,
+      monto_letras: numeroALetras(montoLimpio),
+      fecha_emision: new Date().toISOString().split("T")[0], // Fecha actual (YYYY-MM-DD)
+      fecha_vencimiento: `${datos.añoVencimiento || "2026"}-${String(datos.mesVencimiento).padStart(2, "0")}-${String(datos.diaVencimiento).padStart(2, "0")}`,
+      beneficiario: datos.recibeNombreCompleto || "Victor Molina",
+      concepto_valor: "Vehículo",
+      lugar_pago: "San Juan",
+      estado: estadoDefinitivo,
+    });
+
+    if (errPagare) throw errPagare;
+
+    console.log("Pagaré guardado con éxito en Supabase");
+  } catch (error) {
+    console.error("Error guardando pagaré:", error);
     throw error;
   }
 }

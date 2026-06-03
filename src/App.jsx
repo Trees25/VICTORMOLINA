@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase"; // Asegurate de que esta ruta apunte a tu cliente de Supabase
 import FormBoletoCompraVenta from "./components/FormBoletoCompraVenta.jsx";
+import FormTalonario from "./components/FormTalonario.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Login from "./components/Login.jsx"; // Importamos el nuevo componente
 import { Button } from "@/components/ui/button";
@@ -113,6 +114,17 @@ function App() {
           </Button>
           <Button
             className={
+              activeTab === "talonario"
+                ? "bg-red-600 hover:bg-red-700 text-white font-bold shadow-md w-full sm:w-auto"
+                : "bg-white text-black border-2 border-gray-300 hover:border-red-600 hover:text-red-600 w-full sm:w-auto"
+            }
+            onClick={() => setActiveTab("talonario")}
+          >
+            Talonario
+          </Button>
+
+          <Button
+            className={
               activeTab === "dashboard"
                 ? "bg-red-600 hover:bg-red-700 text-white font-bold shadow-md w-full sm:w-auto"
                 : "bg-white text-black border-2 border-gray-300 hover:border-red-600 hover:text-red-600 w-full sm:w-auto"
@@ -129,6 +141,8 @@ function App() {
           {activeTab === "consignacion" && (
             <FormBoletoCompraVenta tipo="consignacion" />
           )}
+          {activeTab === "talonario" && <FormTalonario />}
+
           {activeTab === "dashboard" && <Dashboard />}
         </main>
       </div>
