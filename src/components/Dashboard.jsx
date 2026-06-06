@@ -23,6 +23,7 @@ import {
   Car,
   DollarSign,
   FilterX,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,6 +87,32 @@ export default function Dashboard() {
       console.error("Error obteniendo datos:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Función para eliminar operación
+  const handleEliminarOperacion = async (id) => {
+    if (
+      !window.confirm(
+        "¿Estás seguro de que querés eliminar esta operación? Esta acción no se puede deshacer.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("operaciones")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      // Actualizar el estado local removiendo la operación eliminada
+      setOperacionesRaw((prev) => prev.filter((op) => op.id !== id));
+    } catch (error) {
+      console.error("Error eliminando operación:", error);
+      alert("No se pudo eliminar la operación. Intente nuevamente.");
     }
   };
 
@@ -527,6 +554,17 @@ export default function Dashboard() {
                       {op.tipo === "consignacion"
                         ? "-"
                         : formatearMoneda(op.monto)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleEliminarOperacion(op.id)}
+                        title="Eliminar operación"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
