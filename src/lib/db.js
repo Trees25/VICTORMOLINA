@@ -26,6 +26,7 @@ export async function guardarOperacionEnBD(data, tipoOperacion) {
           motor: data.vehiculoMotor,
           chasis: data.vehiculoChasis,
           inscripcion_inicial: data.vehiculoInsc,
+          observaciones: data.observacionesAuto,
         },
         { onConflict: "dominio" },
       )
@@ -138,26 +139,10 @@ export async function guardarPagareEnBD(datos) {
 
     // 2. Limpiar variables numéricas
     const montoLimpio = parseFloat(String(datos.monto).replace(/\D/g, "") || 0);
-    const nroCuota = parseInt(datos.numeroCuotaPaga || 1);
-    const totalCuotas = parseInt(datos.numeroCuotas || 1);
-    if (nroCuota > totalCuotas) {
-      alert("no coincide el nro de cuota con la cantidad");
-      return false;
-    }
-    // 1. Evaluás la lógica antes
-    let estadoDefinitivo = "pendiente";
-
-    if (datos.numeroCuotaPaga === datos.numeroCuotas) {
-      estadoDefinitivo = "pagado";
-    } else if (datos.numeroCuotas > datos.numeroCuotaPaga) {
-      estadoDefinitivo = "pendiente";
-    }
 
     // 3. Insertar Pagaré
     const { error: errPagare } = await supabase.from("pagares").insert({
       cliente_id: clienteId,
-      nro_cuota: nroCuota,
-      total_cuotas: totalCuotas,
       monto: montoLimpio,
       monto_letras: numeroALetras(montoLimpio),
       fecha_emision: new Date().toISOString().split("T")[0], // Fecha actual (YYYY-MM-DD)

@@ -2,7 +2,7 @@ import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { numeroALetras } from "@/lib/numeros";
 
 const styles = StyleSheet.create({
-  page: { padding: 40 },
+  page: { padding: 20 },
   container: { border: "1px solid black", padding: 25 },
   headerContainer: {
     flexDirection: "row",
@@ -139,6 +139,11 @@ export const TalonarioPDF = ({ data }) => (
               {data.clienteNombre}{" "}
               {data.clienteDni ? `(DNI: ${data.clienteDni})` : ""}
             </Text>
+            <View style={styles.line} />
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>Garante:</Text>
             <View style={styles.line} />
           </View>
 

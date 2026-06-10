@@ -5,12 +5,14 @@ import {
   View,
   StyleSheet,
   Image,
+  Svg, // Importación nueva
+  Line, // Importación nueva
 } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: {
     padding: 20,
-    fontSize: 9,
+    fontSize: 10.5, // 1. AUMENTAMOS LA LETRA GENERAL (antes 9)
     fontFamily: "Helvetica",
     lineHeight: 1.4,
     backgroundColor: "#FFFFFF",
@@ -19,31 +21,33 @@ const styles = StyleSheet.create({
     border: "1px solid #000000",
     padding: 15,
     height: "100%",
+    display: "flex",
+    flexDirection: "column",
   },
   headerContainer: {
     position: "relative",
     flexDirection: "row",
-    justifyContent: "center", // Centra el bloque de texto en el contenedor
+    justifyContent: "center",
     alignItems: "center",
     borderBottom: "1px solid #000000",
     paddingBottom: 10,
     marginBottom: 15,
-    minHeight: 45, // Evita que el logo colapse el alto si el texto es corto
+    minHeight: 45,
   },
   headerTextContainer: {
-    alignItems: "center", // Centra los textos internamente
+    alignItems: "center",
     justifyContent: "center",
   },
   header: {
     fontWeight: "bold",
-    fontSize: 13,
+    fontSize: 14, // Aumentado
     fontFamily: "Helvetica-Bold",
     color: "#000000",
     textAlign: "center",
   },
   subHeader: {
     fontWeight: "bold",
-    fontSize: 11,
+    fontSize: 12, // Aumentado
     fontFamily: "Helvetica-Bold",
     color: "#000000",
     marginTop: 2,
@@ -59,12 +63,16 @@ const styles = StyleSheet.create({
   },
   observacionesContainer: {
     marginTop: 5,
-    marginBottom: 15,
+  },
+  // 3. CONTENEDOR PARA EL ESPACIO EN BLANCO CON LÍNEA CRUZADA
+  blankSpace: {
+    flexGrow: 1, // Ocupa todo el espacio vertical disponible
+    position: "relative",
+    marginVertical: 10,
   },
   signaturesGrid: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: "auto",
     borderTop: "1px solid #000000",
     paddingTop: 10,
   },
@@ -74,7 +82,7 @@ const styles = StyleSheet.create({
   },
   entityTitle: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 10,
+    fontSize: 11, // Aumentado
     marginBottom: 4,
     textDecoration: "underline",
     color: "#000000",
@@ -84,7 +92,7 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   signatureArea: {
-    marginTop: 25,
+    marginTop: 60, // 2. MUCHO MÁS ESPACIO PARA FIRMAR (antes 25)
     alignItems: "center",
   },
   lineaFirma: {
@@ -93,7 +101,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   aclaracionText: {
-    fontSize: 7,
+    fontSize: 8.5, // Aumentado (antes 7)
     fontFamily: "Helvetica-Bold",
     textAlign: "center",
     color: "#000000",
@@ -104,7 +112,7 @@ export const BoletoCompra = ({ data, logoUrl }) => (
   <Document>
     <Page size="A4" style={styles.page}>
       <View style={styles.outerBorder}>
-        {/* Encabezado corregido con logo absoluto y textos centrados */}
+        {/* ENCABEZADO */}
         <View style={styles.headerContainer}>
           {logoUrl ? (
             <Image style={styles.logo} src={logoUrl} />
@@ -119,6 +127,7 @@ export const BoletoCompra = ({ data, logoUrl }) => (
           </View>
         </View>
 
+        {/* CUERPO DEL DOCUMENTO */}
         <Text style={styles.paragraph}>
           Conste por la presente que entre el Sr.{" "}
           <Text style={styles.bold}>
@@ -155,24 +164,6 @@ export const BoletoCompra = ({ data, logoUrl }) => (
           </Text>
         </Text>
 
-        {/* <Text style={styles.paragraph}>
-          El comprador deberá atender estrictamente el vencimiento de las
-          obligaciones contraídas, si las hubiere, ya que la falta de pago de
-          uno de los documentos comerciales suscriptos, facultará al vendedor a
-          ejecutar la totalidad de lo adecuado, produciéndose la caducidad de
-          pleno derecho de los plazos otorgados, dejando expresamente
-          establecido que el Juicio tendiente a obtener el pago se tramitara por
-          vía del juicio ejecutivo.
-        </Text>
-
-        <Text style={styles.paragraph}>
-          Se conviene por otra parte, que en caso de incumplimiento y demanda
-          judicial queda el vendedor facultado a solicitar el embargo y/o
-          secuestro inmediato del bien, renunciando el comprador a iniciar
-          acciones que le pudieren corresponder por los probables daños y
-          perjuicios que se ocasionaron.
-        </Text>*/}
-
         <Text style={styles.paragraph}>
           El VENDEDOR se responsabiliza ampliamente por lo vendido, declarando
           bajo juramento que el vehículo no está gravado con embargo alguno,
@@ -185,13 +176,6 @@ export const BoletoCompra = ({ data, logoUrl }) => (
           <Text style={styles.bold}>{data.libreDeudaMes || "…………"}</Text> de
           2026.
         </Text>
-
-        {/* <Text style={styles.paragraph}>
-          EL GASTO DE TRANSFERENCIA A CARGO DEL COMPRADOR ES DE:{" "}
-          <Text style={styles.bold}>
-            {data.gastoTransferencia || "…………………………………………"}
-          </Text>
-        </Text>*/}
 
         <Text style={styles.paragraph}>
           El VENDEDOR garantiza y se hace plenamente responsable por el estado
@@ -220,6 +204,34 @@ export const BoletoCompra = ({ data, logoUrl }) => (
           </Text>
         </View>
 
+        {/* ESPACIO EN BLANCO CON LÍNEA DIAGONAL PARA ANULARLO */}
+
+        {/* ESPACIO EN BLANCO CON LÍNEA DIAGONAL PARA ANULARLO */}
+        <View style={styles.blankSpace}>
+          <Svg
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "absolute",
+              top: 0,
+              left: 0,
+            }}
+          >
+            {/* Los valores van de 0 a 100. Puse 2 y 98 para que no toque exactamente el borde y quede más prolija */}
+            <Line
+              x1="2"
+              y1="2"
+              x2="98"
+              y2="98"
+              stroke="#000000"
+              strokeWidth={0.5}
+            />
+          </Svg>
+        </View>
+
+        {/* ÁREA DE FIRMAS (Desplazada hacia abajo) */}
         <View style={styles.signaturesGrid}>
           <View style={styles.col}>
             <Text style={styles.entityTitle}>VENDEDOR</Text>

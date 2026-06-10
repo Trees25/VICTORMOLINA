@@ -5,12 +5,14 @@ import {
   View,
   StyleSheet,
   Image,
+  Svg,
+  Line,
 } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: {
     padding: 20,
-    fontSize: 9,
+    fontSize: 10.5, // 1. AUMENTAMOS LA LETRA GENERAL (antes 9)
     fontFamily: "Helvetica",
     lineHeight: 1.4,
     backgroundColor: "#FFFFFF",
@@ -19,31 +21,33 @@ const styles = StyleSheet.create({
     border: "1px solid #000000",
     padding: 15,
     height: "100%",
+    display: "flex",
+    flexDirection: "column",
   },
   headerContainer: {
     position: "relative",
     flexDirection: "row",
-    justifyContent: "center", // Centra el bloque de texto en el contenedor
+    justifyContent: "center",
     alignItems: "center",
     borderBottom: "1px solid #000000",
     paddingBottom: 10,
     marginBottom: 15,
-    minHeight: 45, // Evita que el logo colapse el alto si el texto es corto
+    minHeight: 45,
   },
   headerTextContainer: {
-    alignItems: "center", // Centra los textos internamente
+    alignItems: "center",
     justifyContent: "center",
   },
   header: {
     fontWeight: "bold",
-    fontSize: 13,
+    fontSize: 14, // Aumentado
     fontFamily: "Helvetica-Bold",
     color: "#000000",
     textAlign: "center",
   },
   subHeader: {
     fontWeight: "bold",
-    fontSize: 11,
+    fontSize: 12, // Aumentado
     fontFamily: "Helvetica-Bold",
     color: "#000000",
     marginTop: 2,
@@ -59,12 +63,16 @@ const styles = StyleSheet.create({
   },
   observacionesContainer: {
     marginTop: 5,
-    marginBottom: 15,
+  },
+  // 3. CONTENEDOR PARA EL ESPACIO EN BLANCO CON LÍNEA CRUZADA
+  blankSpace: {
+    flexGrow: 1, // Ocupa todo el espacio vertical disponible
+    position: "relative",
+    marginVertical: 10,
   },
   signaturesGrid: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: "auto",
     borderTop: "1px solid #000000",
     paddingTop: 10,
   },
@@ -74,7 +82,7 @@ const styles = StyleSheet.create({
   },
   entityTitle: {
     fontFamily: "Helvetica-Bold",
-    fontSize: 10,
+    fontSize: 11, // Aumentado
     marginBottom: 4,
     textDecoration: "underline",
     color: "#000000",
@@ -84,7 +92,7 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   signatureArea: {
-    marginTop: 25,
+    marginTop: 60, // 2. MUCHO MÁS ESPACIO PARA FIRMAR (antes 25)
     alignItems: "center",
   },
   lineaFirma: {
@@ -93,7 +101,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   aclaracionText: {
-    fontSize: 7,
+    fontSize: 8.5, // Aumentado (antes 7)
     fontFamily: "Helvetica-Bold",
     textAlign: "center",
     color: "#000000",
@@ -207,6 +215,31 @@ export const BoletoVenta = ({ data, logoUrl }) => (
                 "………………………………………………………………………………………………………………………………"}
             </Text>
           </Text>
+        </View>
+
+        {/* ESPACIO EN BLANCO CON LÍNEA DIAGONAL PARA ANULARLO */}
+        <View style={styles.blankSpace}>
+          <Svg
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "absolute",
+              top: 0,
+              left: 0,
+            }}
+          >
+            {/* Los valores van de 0 a 100. Puse 2 y 98 para que no toque exactamente el borde y quede más prolija */}
+            <Line
+              x1="2"
+              y1="2"
+              x2="98"
+              y2="98"
+              stroke="#000000"
+              strokeWidth={0.5}
+            />
+          </Svg>
         </View>
 
         <View style={styles.signaturesGrid}>

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { pdf } from "@react-pdf/renderer";
-import { TalonarioPDF } from "./TalonarioPDF.jsx"; // Asegurate que el nombre coincida con tu archivo
-import { guardarPagareEnBD } from "../lib/db.js";
+import { TalonarioPDF } from "./TalonarioPDF.jsx";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -13,13 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "../lib/supabase.js";
-
+import { guardarPagareEnBD } from "../lib/db.js";
 export default function FormTalonario() {
   const [loading, setLoading] = useState(false);
   const [clientes, setClientes] = useState([]);
-
-  // Nuevo estado para guardar los talonarios sin terminar del cliente seleccionado
-  const [planesAbiertos, setPlanesAbiertos] = useState([]);
+  const [busquedaDni, setBusquedaDni] = useState("");
 
   useEffect(() => {
     fetchClientes();
@@ -34,11 +31,15 @@ export default function FormTalonario() {
     empresaNombre: "Victor Molina",
     recibeNombreCompleto: "",
     monto: "",
-    numeroCuotas: "",
-    numeroCuotaPaga: "",
+
+    // Variables separadas para el PDF
     diaVencimiento: "",
     mesVencimiento: "",
     añoVencimiento: "",
+
+    // Variable auxiliar para el calendario
+    _fechaVencimientoDate: "",
+
     valorRecibidoen: "",
     pagaderoEn: "",
   });
@@ -53,11 +54,13 @@ export default function FormTalonario() {
       empresaNombre: "Victor Molina",
       recibeNombreCompleto: "Victor Molina",
       monto: "500000",
+
+      // Fechas sincronizadas
       diaVencimiento: "02",
       mesVencimiento: "06",
       añoVencimiento: "2026",
-      numeroCuotas: "3",
-      numeroCuotaPaga: "1",
+      _fechaVencimientoDate: "2026-06-02",
+
       valorRecibidoen: "efectivo",
       pagaderoEn: "San Juan",
     });
@@ -73,53 +76,6 @@ export default function FormTalonario() {
     }
   }
 
-  // Busca los pagarés del cliente y arma los planes pendientes
-  const fetchPlanesCliente = async (clienteId) => {
-    try {
-      const { data: pagares, error } = await supabase
-        .from("pagares")
-        .select("*")
-        .eq("cliente_id", clienteId)
-        .order("nro_cuota", { ascending: true });
-
-      if (error) throw error;
-
-      // Agrupar los pagarés por características para identificar el "Talonario"
-      const planesMap = new Map();
-
-      pagares.forEach((p) => {
-        // Creamos una clave única basada en el total de cuotas y el monto
-        const key = `${p.total_cuotas}-${p.monto}-${p.fecha_emision}`;
-        const [año, mes, dia] = p.fecha_vencimiento
-          ? p.fecha_vencimiento.split("-")
-          : ["", "", ""];
-        if (!planesMap.has(key)) {
-          planesMap.set(key, {
-            key: key,
-            monto: p.monto,
-            totalCuotas: p.total_cuotas,
-            fechaEmision: p.fecha_emision,
-            cuotasGeneradas: [p.nro_cuota],
-            diaVencimiento: dia,
-            mesVencimiento: mes,
-            añoVencimiento: año,
-          });
-        } else {
-          planesMap.get(key).cuotasGeneradas.push(p.nro_cuota);
-        }
-      });
-
-      // Filtrar solo los planes donde la cuota máxima generada es menor al total de cuotas
-      const activos = Array.from(planesMap.values()).filter(
-        (plan) => Math.max(...plan.cuotasGeneradas) < plan.totalCuotas,
-      );
-
-      setPlanesAbiertos(activos);
-    } catch (error) {
-      console.error("Error buscando planes del cliente:", error);
-    }
-  };
-
   const handleSeleccionarCliente = (clienteId) => {
     const cliente = clientes.find((c) => c.id === clienteId);
     if (cliente) {
@@ -130,37 +86,6 @@ export default function FormTalonario() {
         clienteDomicilio: cliente.domicilio || "",
         clienteLocalidad: cliente.localidad || "",
         clienteTel: cliente.telefono || "",
-      }));
-
-      // Al seleccionar el cliente, buscamos si tiene talonarios a medio completar
-      fetchPlanesCliente(clienteId);
-    }
-  };
-
-  // Función para autocompletar cuando se elige un talonario abierto
-  const handleSeleccionarPlan = (planKey) => {
-    const plan = planesAbiertos.find((p) => p.key === planKey);
-    if (plan) {
-      const cuotaSiguiente = Math.max(...plan.cuotasGeneradas) + 1;
-      let mesSiguiente = parseInt(plan.mesVencimiento) + 1;
-      let añoSiguiente = parseInt(plan.añoVencimiento);
-
-      if (mesSiguiente > 12) {
-        mesSiguiente = 1;
-        añoSiguiente += 1;
-      }
-      setData((prev) => ({
-        ...prev,
-        monto: plan.monto.toString(),
-        numeroCuotas: plan.totalCuotas.toString(),
-        numeroCuotaPaga: cuotaSiguiente.toString(),
-        // Opcional: Podés autocompletar otros campos si son siempre iguales
-        recibeNombreCompleto: "Victor Molina",
-        valorRecibidoen: "Vehículo",
-        pagaderoEn: "San Juan",
-        diaVencimiento: plan.diaVencimiento,
-        mesVencimiento: mesSiguiente.toString().padStart(2, "0"),
-        añoVencimiento: añoSiguiente.toString(),
       }));
     }
   };
@@ -173,23 +98,18 @@ export default function FormTalonario() {
     setLoading(true);
     try {
       if (data.clienteDni) {
-        // Ojo: Asegurate de que guardarPagareEnBD retorne un error si falla,
-        // o maneje el try/catch correctamente para que no corte el flujo.
         await guardarPagareEnBD(data);
       } else {
         console.log("Modo borrador: PDF generado sin guardar en BD.");
       }
+
       const blobBoleto = await pdf(<TalonarioPDF data={data} />).toBlob();
       const urlBoleto = URL.createObjectURL(blobBoleto);
       const aBoleto = document.createElement("a");
       aBoleto.href = urlBoleto;
-      aBoleto.download = `Pagare_${data.numeroCuotaPaga}_de_${data.numeroCuotas}_${data.clienteNombre}.pdf`;
+      aBoleto.download = `Pagare_de_${data.clienteNombre || "Borrador"}.pdf`;
       aBoleto.click();
       URL.revokeObjectURL(urlBoleto);
-
-      // Actualizamos los planes por si quiere generar el siguiente inmediatamente
-      const clienteActual = clientes.find((c) => c.dni === data.clienteDni);
-      if (clienteActual) fetchPlanesCliente(clienteActual.id);
     } catch (error) {
       console.error("Error generando PDFs:", error);
     } finally {
@@ -197,29 +117,46 @@ export default function FormTalonario() {
     }
   };
 
+  // Filtrado de clientes en base al texto ingresado en el buscador de DNI
+  const clientesFiltrados = busquedaDni
+    ? clientes.filter((c) => c.dni && c.dni.includes(busquedaDni))
+    : clientes;
+
   return (
     <div className="space-y-6 sm:space-y-8 p-4 sm:p-8 bg-white text-black border border-gray-200 rounded-xl shadow-lg">
       <h2 className="text-xl sm:text-2xl font-bold border-b-2 border-black pb-3">
         Generador de Pagarés (Talonario)
       </h2>
 
-      <div className="space-y-4 bg-blue-50 p-4 sm:p-5 rounded-lg border border-blue-200 mb-6">
+      <div className="bg-blue-50 p-4 sm:p-5 rounded-lg border border-blue-200 mb-6">
+        <Label className="font-bold text-blue-700 mb-3 block">
+          1. Buscar y Seleccionar Cliente
+        </Label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="font-bold text-blue-700">
-              1. Seleccionar Cliente
-            </Label>
+            <Label className="text-sm text-blue-600">Filtrar por DNI</Label>
+            <Input
+              placeholder="Ej: 23456789..."
+              value={busquedaDni}
+              onChange={(e) => setBusquedaDni(e.target.value)}
+              className="bg-white border-blue-300 focus-visible:ring-blue-600"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm text-blue-600">Elegir Cliente</Label>
             <Select onValueChange={handleSeleccionarCliente}>
               <SelectTrigger className="bg-white border-blue-300 focus:ring-blue-600">
-                <SelectValue placeholder="Buscar cliente..." />
+                <SelectValue placeholder="Resultados de búsqueda..." />
               </SelectTrigger>
               <SelectContent>
-                {clientes.length === 0 ? (
+                {clientesFiltrados.length === 0 ? (
                   <SelectItem value="null" disabled>
-                    Cargando...
+                    {busquedaDni
+                      ? "No se encontraron resultados"
+                      : "Cargando..."}
                   </SelectItem>
                 ) : (
-                  clientes.map((cliente) => (
+                  clientesFiltrados.map((cliente) => (
                     <SelectItem key={cliente.id} value={cliente.id}>
                       {cliente.nombre_completo} (DNI: {cliente.dni})
                     </SelectItem>
@@ -228,28 +165,6 @@ export default function FormTalonario() {
               </SelectContent>
             </Select>
           </div>
-
-          {/* ESTE SELECT SOLO APARECE SI EL CLIENTE TIENE TALONARIOS SIN TERMINAR */}
-          {planesAbiertos.length > 0 && (
-            <div className="space-y-2">
-              <Label className="font-bold text-green-700">
-                2. Continuar Talonario Abierto
-              </Label>
-              <Select onValueChange={handleSeleccionarPlan}>
-                <SelectTrigger className="bg-green-50 border-green-300 focus:ring-green-600">
-                  <SelectValue placeholder="Seleccionar plan pendiente..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {planesAbiertos.map((plan) => (
-                    <SelectItem key={plan.key} value={plan.key}>
-                      Plan {plan.totalCuotas} cuotas de ${plan.monto} (Toca
-                      generar: {Math.max(...plan.cuotasGeneradas) + 1})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
         </div>
       </div>
 
@@ -328,26 +243,6 @@ export default function FormTalonario() {
               className="bg-white focus-visible:ring-red-600"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="font-semibold">N° Cuota Actual</Label>
-              <Input
-                name="numeroCuotaPaga"
-                value={data.numeroCuotaPaga || ""}
-                onChange={handleChange}
-                className="bg-white focus-visible:ring-red-600"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="font-semibold">Total de Cuotas</Label>
-              <Input
-                name="numeroCuotas"
-                value={data.numeroCuotas || ""}
-                onChange={handleChange}
-                className="bg-white focus-visible:ring-red-600"
-              />
-            </div>
-          </div>
           <div className="space-y-2">
             <Label className="font-semibold">
               Valor recibido en (Concepto)
@@ -375,31 +270,33 @@ export default function FormTalonario() {
         <h3 className="font-bold text-red-600 uppercase tracking-wide mb-4">
           Fecha de Vencimiento
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label className="font-semibold">Día</Label>
+            <Label className="font-semibold">Seleccionar Fecha</Label>
             <Input
-              name="diaVencimiento"
-              value={data.diaVencimiento || ""}
-              onChange={handleChange}
-              className="bg-white focus-visible:ring-red-600"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="font-semibold">Mes</Label>
-            <Input
-              name="mesVencimiento"
-              value={data.mesVencimiento || ""}
-              onChange={handleChange}
-              className="bg-white focus-visible:ring-red-600"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="font-semibold">Año</Label>
-            <Input
-              name="añoVencimiento"
-              value={data.añoVencimiento || ""}
-              onChange={handleChange}
+              type="date"
+              value={data._fechaVencimientoDate || ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val) {
+                  const [year, month, day] = val.split("-");
+                  setData({
+                    ...data,
+                    diaVencimiento: day,
+                    mesVencimiento: month,
+                    añoVencimiento: year,
+                    _fechaVencimientoDate: val,
+                  });
+                } else {
+                  setData({
+                    ...data,
+                    diaVencimiento: "",
+                    mesVencimiento: "",
+                    añoVencimiento: "",
+                    _fechaVencimientoDate: "",
+                  });
+                }
+              }}
               className="bg-white focus-visible:ring-red-600"
             />
           </div>

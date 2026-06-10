@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input"; // Importamos Input para las fechas
+import { Input } from "@/components/ui/input";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -24,6 +24,9 @@ import {
   DollarSign,
   FilterX,
   Trash2,
+  Search,
+  Eye,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,6 +58,9 @@ export default function Dashboard() {
   const [operacionesRaw, setOperacionesRaw] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Estado para el modal de detalles del vehículo
+  const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
+
   // Estado de los filtros actualizado
   const [filtros, setFiltros] = useState({
     fechaDesde: "",
@@ -62,6 +68,7 @@ export default function Dashboard() {
     tipo: "todos",
     marca: "todas",
     formaPago: "todas",
+    patente: "", // Nuevo filtro
   });
 
   useEffect(() => {
@@ -71,12 +78,13 @@ export default function Dashboard() {
   const fetchOperaciones = async () => {
     setLoading(true);
     try {
+      // Ahora traemos todos los datos útiles del vehículo
       const { data, error } = await supabase
         .from("operaciones")
         .select(
           `
           id, tipo, monto, forma_pago, fecha_firma, estado,
-          vehiculos (dominio, marca, modelo, tipo)
+          vehiculos (id, dominio, marca, modelo, tipo, anio, motor, chasis, inscripcion_inicial, observaciones)
         `,
         )
         .order("fecha_firma", { ascending: false });
@@ -90,7 +98,6 @@ export default function Dashboard() {
     }
   };
 
-  // Función para eliminar operación
   const handleEliminarOperacion = async (id) => {
     if (
       !window.confirm(
@@ -107,8 +114,6 @@ export default function Dashboard() {
         .eq("id", id);
 
       if (error) throw error;
-
-      // Actualizar el estado local removiendo la operación eliminada
       setOperacionesRaw((prev) => prev.filter((op) => op.id !== id));
     } catch (error) {
       console.error("Error eliminando operación:", error);
@@ -129,30 +134,35 @@ export default function Dashboard() {
   }, [operacionesRaw]);
 
   // Aplicación de filtros
-  //
-  // Aplicación de filtros en memoria (ultrarrápido)
   const operacionesFiltradas = useMemo(() => {
     return operacionesRaw.filter((op) => {
       if (!op.fecha_firma) return false;
 
-      // Supabase devuelve "YYYY-MM-DD" (o "YYYY-MM-DDTHH..."). Nos quedamos con la fecha pura.
       const fechaOpStr = op.fecha_firma.split("T")[0];
 
-      // Ambos filtros vienen del <input type="date"> en formato "YYYY-MM-DD"
-      // La comparación de strings directa funciona a la perfección.
       if (filtros.fechaDesde && fechaOpStr < filtros.fechaDesde) return false;
       if (filtros.fechaHasta && fechaOpStr > filtros.fechaHasta) return false;
-
-      // Resto de los filtros
       if (filtros.tipo !== "todos" && op.tipo !== filtros.tipo) return false;
       if (filtros.marca !== "todas" && op.vehiculos?.marca !== filtros.marca)
         return false;
       if (filtros.formaPago !== "todas" && op.forma_pago !== filtros.formaPago)
         return false;
 
+      // Filtro por patente (dominio)
+      if (filtros.patente && op.vehiculos?.dominio) {
+        if (
+          !op.vehiculos.dominio
+            .toLowerCase()
+            .includes(filtros.patente.toLowerCase())
+        ) {
+          return false;
+        }
+      }
+
       return true;
     });
   }, [operacionesRaw, filtros]);
+
   // Cálculos de KPIs
   const totalVentas = operacionesFiltradas
     .filter((op) => op.tipo === "venta")
@@ -221,6 +231,7 @@ export default function Dashboard() {
       tipo: "todos",
       marca: "todas",
       formaPago: "todas",
+      patente: "",
     });
 
   if (loading)
@@ -231,7 +242,88 @@ export default function Dashboard() {
     );
 
   return (
-    <div className="p-4 sm:p-8 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-8 space-y-6 bg-gray-50 min-h-screen relative">
+      {/* MODAL DETALLES DEL VEHÍCULO */}
+      {vehiculoSeleccionado && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setVehiculoSeleccionado(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <h3 className="text-2xl font-bold text-gray-900 border-b pb-3 mb-4 flex items-center gap-2">
+              <Car className="text-blue-600" />
+              Información del Vehículo
+            </h3>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-sm">
+              <div>
+                <p className="text-gray-500 font-medium">Dominio (Patente)</p>
+                <p className="font-bold text-lg uppercase text-gray-900">
+                  {vehiculoSeleccionado.dominio}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 font-medium">Marca y Modelo</p>
+                <p className="font-bold text-gray-900">
+                  {vehiculoSeleccionado.marca} {vehiculoSeleccionado.modelo}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 font-medium">Año</p>
+                <p className="font-semibold text-gray-900">
+                  {vehiculoSeleccionado.anio || "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-500 font-medium">Tipo</p>
+                <p className="font-semibold text-gray-900">
+                  {vehiculoSeleccionado.tipo || "-"}
+                </p>
+              </div>
+              <div className="col-span-2 bg-gray-50 p-3 rounded-lg border">
+                <p className="text-gray-500 font-medium mb-1">N° de Motor</p>
+                <p className="font-mono text-gray-900 uppercase">
+                  {vehiculoSeleccionado.motor || "No registrado"}
+                </p>
+              </div>
+              <div className="col-span-2 bg-gray-50 p-3 rounded-lg border">
+                <p className="text-gray-500 font-medium mb-1">N° de Chasis</p>
+                <p className="font-mono text-gray-900 uppercase">
+                  {vehiculoSeleccionado.chasis || "No registrado"}
+                </p>
+              </div>
+              {vehiculoSeleccionado.observaciones && (
+                <div className="col-span-2 bg-gray-50 p-3 rounded-lg border">
+                  <p className="text-gray-500 font-medium mb-1">
+                    Observaciones
+                  </p>
+                  <p className="font-mono text-gray-900 uppercase">
+                    {vehiculoSeleccionado.observaciones || "No registrado"}
+                  </p>
+                </div>
+              )}
+
+              <div className="col-span-2">
+                <p className="text-gray-500 font-medium">Inscripción Inicial</p>
+                <p className="font-semibold text-gray-900">
+                  {vehiculoSeleccionado.inscripcion_inicial || "-"}
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 pt-4 border-t text-right">
+              <Button
+                onClick={() => setVehiculoSeleccionado(null)}
+                variant="outline"
+              >
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
           Dashboard Analítico
@@ -245,8 +337,22 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      {/* BARRA DE FILTROS - Ahora con 5 columnas */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+      {/* BARRA DE FILTROS - 6 Columnas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <div className="space-y-1">
+          <label className="text-xs font-semibold text-gray-500 uppercase">
+            Buscar Patente
+          </label>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Ej: AB123CD"
+              value={filtros.patente}
+              onChange={(e) => actualizarFiltro("patente", e.target.value)}
+              className="pl-9 bg-gray-50 text-sm focus-visible:ring-blue-600 uppercase"
+            />
+          </div>
+        </div>
         <div className="space-y-1">
           <label className="text-xs font-semibold text-gray-500 uppercase">
             Desde
@@ -494,7 +600,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* TABLA DETALLADA */}
+      {/* TABLA DETALLADA CON SCROLL */}
       <Card className="shadow-sm border-gray-200 bg-white">
         <CardHeader>
           <CardTitle>
@@ -502,75 +608,102 @@ export default function Dashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Vehículo</TableHead>
-                <TableHead>Forma Pago</TableHead>
-                <TableHead className="text-right">Monto</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {operacionesFiltradas.length === 0 ? (
+          <div className="overflow-x-auto overflow-y-auto max-h-[500px] border rounded-md">
+            <Table className="relative w-full min-w-[700px]">
+              <TableHeader className="sticky top-0 bg-gray-100 z-10 shadow-sm">
                 <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center text-gray-500 py-6"
-                  >
-                    No se encontraron operaciones con los filtros actuales.
-                  </TableCell>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Vehículo</TableHead>
+                  <TableHead>Forma Pago</TableHead>
+                  <TableHead className="text-right">Monto</TableHead>
+                  <TableHead className="w-[100px] text-center">
+                    Acciones
+                  </TableHead>
                 </TableRow>
-              ) : (
-                operacionesFiltradas.map((op) => (
-                  <TableRow key={op.id}>
-                    <TableCell className="text-gray-600">
-                      {new Date(op.fecha_firma).toLocaleDateString("es-AR")}
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider ${
-                          op.tipo === "venta"
-                            ? "bg-green-100 text-green-800"
-                            : op.tipo === "compra"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-orange-100 text-orange-800"
-                        }`}
-                      >
-                        {op.tipo}
-                      </span>
-                    </TableCell>
-                    <TableCell className="font-medium text-gray-900">
-                      {op.vehiculos?.marca} {op.vehiculos?.modelo}{" "}
-                      <span className="text-gray-400 font-normal">
-                        | {op.vehiculos?.dominio}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-gray-600 capitalize">
-                      {op.forma_pago || "-"}
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-gray-900">
-                      {op.tipo === "consignacion"
-                        ? "-"
-                        : formatearMoneda(op.monto)}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => handleEliminarOperacion(op.id)}
-                        title="Eliminar operación"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+              </TableHeader>
+              <TableBody>
+                {operacionesFiltradas.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="text-center text-gray-500 py-10"
+                    >
+                      No se encontraron operaciones con los filtros actuales.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  operacionesFiltradas.map((op) => (
+                    <TableRow
+                      key={op.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <TableCell className="text-gray-600 whitespace-nowrap">
+                        {new Date(op.fecha_firma).toLocaleDateString("es-AR")}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider whitespace-nowrap ${
+                            op.tipo === "venta"
+                              ? "bg-green-100 text-green-800"
+                              : op.tipo === "compra"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-orange-100 text-orange-800"
+                          }`}
+                        >
+                          {op.tipo}
+                        </span>
+                      </TableCell>
+                      <TableCell className="font-medium text-gray-900">
+                        <div className="flex items-center gap-2">
+                          <span>
+                            {op.vehiculos?.marca} {op.vehiculos?.modelo}
+                          </span>
+                          <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded font-mono uppercase">
+                            {op.vehiculos?.dominio}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-600 capitalize whitespace-nowrap">
+                        {op.forma_pago || "-"}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-gray-900 whitespace-nowrap">
+                        {op.tipo === "consignacion"
+                          ? "-"
+                          : formatearMoneda(op.monto)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex justify-center gap-1">
+                          {/* Botón para ver los detalles del auto */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                            onClick={() =>
+                              setVehiculoSeleccionado(op.vehiculos)
+                            }
+                            title="Ver detalles del vehículo"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {/* Botón para eliminar */}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleEliminarOperacion(op.id)}
+                            title="Eliminar operación"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

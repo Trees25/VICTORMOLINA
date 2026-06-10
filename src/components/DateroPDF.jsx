@@ -29,6 +29,12 @@ export const DateroPDF = ({ data }) => (
         </Text>
 
         <View style={styles.row}>
+          <Text style={styles.label}>DOMINIO:</Text>
+          <Text style={styles.value}>{data.dominio}</Text>
+          <View style={styles.line} />
+        </View>
+
+        <View style={styles.row}>
           <Text style={styles.label}>TITULAR:</Text>
           <Text style={styles.value}>{data.titular}</Text>
           <View style={styles.line} />

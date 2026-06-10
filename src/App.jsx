@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase"; // Asegurate de que esta ruta apunte 
 import FormBoletoCompraVenta from "./components/FormBoletoCompraVenta.jsx";
 import FormTalonario from "./components/FormTalonario.jsx";
 import Dashboard from "./components/Dashboard.jsx";
+import HistorialCrediticio from "./components/HistorialCrediticio.jsx";
 import Login from "./components/Login.jsx"; // Importamos el nuevo componente
 import { Button } from "@/components/ui/button";
 import logoAgencia from "@/assets/logo.jpeg";
@@ -61,8 +62,7 @@ function App() {
             />
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-black">
-                Generador de Documentos{" "}
-                <span className="text-red-600">VICTOR MOLINA</span>
+                CRM <span className="text-red-600">VICTOR MOLINA</span>
               </h1>
               <p className="text-gray-600 mt-1 font-medium text-sm sm:text-base">
                 Seleccione el formulario que desea completar.
@@ -125,6 +125,17 @@ function App() {
 
           <Button
             className={
+              activeTab === "historialCrediticio"
+                ? "bg-red-600 hover:bg-red-700 text-white font-bold shadow-md w-full sm:w-auto"
+                : "bg-white text-black border-2 border-gray-300 hover:border-red-600 hover:text-red-600 w-full sm:w-auto"
+            }
+            onClick={() => setActiveTab("historialCrediticio")}
+          >
+            Consultar historial crediticio
+          </Button>
+
+          <Button
+            className={
               activeTab === "dashboard"
                 ? "bg-red-600 hover:bg-red-700 text-white font-bold shadow-md w-full sm:w-auto"
                 : "bg-white text-black border-2 border-gray-300 hover:border-red-600 hover:text-red-600 w-full sm:w-auto"
@@ -144,6 +155,7 @@ function App() {
           {activeTab === "talonario" && <FormTalonario />}
 
           {activeTab === "dashboard" && <Dashboard />}
+          {activeTab === "historialCrediticio" && <HistorialCrediticio />}
         </main>
       </div>
     </div>

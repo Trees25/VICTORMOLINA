@@ -8,6 +8,7 @@ import { guardarOperacionEnBD } from "../lib/db.js";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import TextareaAutosize from "react-textarea-autosize";
 import {
   Select,
   SelectContent,
@@ -40,7 +41,6 @@ const ANIOS_AUTOS = Array.from({ length: 2026 - 1990 + 1 }, (_, i) =>
   (2026 - i).toString(),
 );
 
-// IMPORTANTE: Se agregó "default" aquí
 export default function FormBoletoCompraVenta({ tipo }) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState({
@@ -64,17 +64,27 @@ export default function FormBoletoCompraVenta({ tipo }) {
     vehiculoInsc: "",
     precio: "",
     formaPago: "",
+    observacionesAuto: "",
+
+    // Variables para el PDF
     libreDeudaDia: "",
     libreDeudaMes: "",
-    gastoTransferencia: "",
-    fechaTrans: "",
     firmaDia: "",
     firmaMes: "",
+    fechaNac: "",
+
+    // Variables auxiliares para los selectores de fecha
+    _fechaLibreDeuda: "",
+    _fechaFirma: "",
+    _fechaNacDate: "",
+
+    gastoTransferencia: "",
+    fechaTrans: "",
     observaciones:
       "Se entrega manuales, duplicado de llave, auxilio, criquet y llave de rueda.",
+    dominio: "",
     titular: "",
     cuil: "",
-    fechaNac: "",
     conyuge: "",
     dniConyuge: "",
     telefonosDatero: "",
@@ -84,7 +94,6 @@ export default function FormBoletoCompraVenta({ tipo }) {
   });
 
   const llenarDatosDePrueba = () => {
-    // Genera un número aleatorio para la patente y evitar conflictos de unicidad en cada prueba
     const patenteRandom = "TST" + Math.floor(Math.random() * 1000);
 
     setData({
@@ -108,15 +117,23 @@ export default function FormBoletoCompraVenta({ tipo }) {
       vehiculoInsc: "01/01/2020",
       precio: "15000000",
       formaPago: "Efectivo",
+      observacionesAuto: "4 cubiertas nuevas",
+
+      // Fechas de prueba sincronizadas
       libreDeudaDia: "15",
       libreDeudaMes: "10",
-      gastoTransferencia: "150000",
+      _fechaLibreDeuda: "2026-10-15",
       firmaDia: "20",
       firmaMes: "10",
+      _fechaFirma: "2026-10-20",
+      fechaNac: "15/05/1990",
+      _fechaNacDate: "1990-05-15",
+
+      gastoTransferencia: "150000",
       observaciones: "Vehículo de prueba para validación de base de datos.",
+      dominio: patenteRandom,
       titular: "María Gómez",
       cuil: "27876543214",
-      fechaNac: "15/05/1990",
       conyuge: "Ninguno",
       dniConyuge: "",
       telefonosDatero: "2647654321",
@@ -150,14 +167,6 @@ export default function FormBoletoCompraVenta({ tipo }) {
         aBoleto.download = `boleto_${data.vehiculoDominio || "borrador"}_compra.pdf`;
         aBoleto.click();
         URL.revokeObjectURL(urlBoleto);
-
-        const blobDatero = await pdf(<DateroPDF data={data} />).toBlob();
-        const urlDatero = URL.createObjectURL(blobDatero);
-        const aDatero = document.createElement("a");
-        aDatero.href = urlDatero;
-        aDatero.download = `datero_${data.titular || "borrador"}.pdf`;
-        aDatero.click();
-        URL.revokeObjectURL(urlDatero);
       } else if (tipo === "venta") {
         const blobBoleto = await pdf(<BoletoVenta data={data} />).toBlob();
         const urlBoleto = URL.createObjectURL(blobBoleto);
@@ -166,6 +175,14 @@ export default function FormBoletoCompraVenta({ tipo }) {
         aBoleto.download = `boleto_${data.vehiculoDominio || "borrador"}_venta.pdf`;
         aBoleto.click();
         URL.revokeObjectURL(urlBoleto);
+
+        const blobDatero = await pdf(<DateroPDF data={data} />).toBlob();
+        const urlDatero = URL.createObjectURL(blobDatero);
+        const aDatero = document.createElement("a");
+        aDatero.href = urlDatero;
+        aDatero.download = `datero_${data.titular || "borrador"}.pdf`;
+        aDatero.click();
+        URL.revokeObjectURL(urlDatero);
       } else {
         const blobBoleto = await pdf(
           <BoletoConsignación data={data} />,
@@ -417,11 +434,12 @@ export default function FormBoletoCompraVenta({ tipo }) {
           </div>
           <div className="space-y-2">
             <Label className="font-semibold">Forma de Pago</Label>
-            <Input
+            <TextareaAutosize
               name="formaPago"
               value={data.formaPago || ""}
               onChange={handleChange}
-              className="bg-white focus-visible:ring-red-600"
+              minRows={1}
+              className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 resize-none"
             />
           </div>
           <div className="space-y-2">
@@ -442,6 +460,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
                 name="fechaTrans"
                 value={data.fechaTrans || ""}
                 onChange={handleChange}
+                placeholder="Ej: 30"
                 className="bg-white focus-visible:ring-red-600"
               />
             </div>
@@ -459,43 +478,76 @@ export default function FormBoletoCompraVenta({ tipo }) {
 
         <div className="space-y-4 bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200">
           <h3 className="font-bold text-red-600 uppercase tracking-wide">
-            Fechas (2026)
+            Fechas de la Operación
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Calendario Libre Deuda */}
             <div className="space-y-2">
-              <Label className="font-semibold">Día Libre Deuda</Label>
+              <Label className="font-semibold">Fecha Libre Deuda</Label>
               <Input
-                name="libreDeudaDia"
-                value={data.libreDeudaDia || ""}
-                onChange={handleChange}
+                type="date"
+                value={data._fechaLibreDeuda || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    const [, month, day] = val.split("-");
+                    setData({
+                      ...data,
+                      libreDeudaDia: day,
+                      libreDeudaMes: month,
+                      _fechaLibreDeuda: val,
+                    });
+                  } else {
+                    setData({
+                      ...data,
+                      libreDeudaDia: "",
+                      libreDeudaMes: "",
+                      _fechaLibreDeuda: "",
+                    });
+                  }
+                }}
+                className="bg-white focus-visible:ring-red-600"
+              />
+            </div>
+
+            {/* Calendario Firma */}
+            <div className="space-y-2">
+              <Label className="font-semibold">Fecha de Firma</Label>
+              <Input
+                type="date"
+                value={data._fechaFirma || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    const [, month, day] = val.split("-");
+                    setData({
+                      ...data,
+                      firmaDia: day,
+                      firmaMes: month,
+                      _fechaFirma: val,
+                    });
+                  } else {
+                    setData({
+                      ...data,
+                      firmaDia: "",
+                      firmaMes: "",
+                      _fechaFirma: "",
+                    });
+                  }
+                }}
                 className="bg-white focus-visible:ring-red-600"
               />
             </div>
             <div className="space-y-2">
-              <Label className="font-semibold">Mes Libre Deuda</Label>
-              <Input
-                name="libreDeudaMes"
-                value={data.libreDeudaMes || ""}
+              <Label className="font-semibold">
+                Observaciones del vehiculo (NO representadas en el boleto)
+              </Label>
+              <TextareaAutosize
+                name="observacionesAuto"
+                value={data.observacionesAuto || ""}
                 onChange={handleChange}
-                className="bg-white focus-visible:ring-red-600"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="font-semibold">Día Firma (San Juan)</Label>
-              <Input
-                name="firmaDia"
-                value={data.firmaDia || ""}
-                onChange={handleChange}
-                className="bg-white focus-visible:ring-red-600"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="font-semibold">Mes Firma (San Juan)</Label>
-              <Input
-                name="firmaMes"
-                value={data.firmaMes || ""}
-                onChange={handleChange}
-                className="bg-white focus-visible:ring-red-600"
+                minRows={1}
+                className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 resize-none"
               />
             </div>
           </div>
@@ -503,12 +555,22 @@ export default function FormBoletoCompraVenta({ tipo }) {
       </div>
 
       {/* BLOQUE DATERO */}
-      {tipo === "compra" && (
+      {tipo === "venta" && (
         <div className="space-y-4 bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200 border-t-4 border-t-black">
           <h3 className="font-bold text-red-600 uppercase tracking-wide">
             Datos Adicionales (Datero Agencia)
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="font-semibold">Dominio del vehiculo</Label>
+              <Input
+                name="dominio"
+                value={data.dominio || ""}
+                onChange={handleChange}
+                className="bg-white focus-visible:ring-red-600"
+              />
+            </div>
+
             <div className="space-y-2">
               <Label className="font-semibold">Titular</Label>
               <Input
@@ -527,15 +589,30 @@ export default function FormBoletoCompraVenta({ tipo }) {
                 className="bg-white focus-visible:ring-red-600"
               />
             </div>
+
+            {/* Calendario Nacimiento */}
             <div className="space-y-2">
               <Label className="font-semibold">Fecha Nac.</Label>
               <Input
-                name="fechaNac"
-                value={data.fechaNac || ""}
-                onChange={handleChange}
+                type="date"
+                value={data._fechaNacDate || ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    const [year, month, day] = val.split("-");
+                    setData({
+                      ...data,
+                      fechaNac: `${day}/${month}/${year}`,
+                      _fechaNacDate: val,
+                    });
+                  } else {
+                    setData({ ...data, fechaNac: "", _fechaNacDate: "" });
+                  }
+                }}
                 className="bg-white focus-visible:ring-red-600"
               />
             </div>
+
             <div className="space-y-2">
               <Label className="font-semibold">Cónyuge</Label>
               <Input
@@ -597,7 +674,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
 
       {/* BOTONES DE ACCIÓN */}
       <div className="pt-6 flex flex-col sm:flex-row justify-end gap-4">
-        {/* Botón temporal para pruebas (borrar antes de pasar a producción) */}
+        {/* Botón temporal para pruebas */}
         <Button
           type="button"
           variant="outline"
