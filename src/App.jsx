@@ -135,7 +135,7 @@ function App() {
             Talonario
           </Button>
 
-          <Button
+          {/*<Button
             className={
               activeTab === "historialCrediticio"
                 ? "bg-red-600 hover:bg-red-700 text-white font-bold shadow-md w-full sm:w-auto"
@@ -145,7 +145,7 @@ function App() {
           >
             Consultar historial crediticio
           </Button>
-
+*/}
           <Button
             className={
               activeTab === "dashboard"
@@ -169,7 +169,7 @@ function App() {
           {activeTab === "talonario" && <FormTalonario />}
 
           {activeTab === "dashboard" && <Dashboard />}
-          {activeTab === "historialCrediticio" && <HistorialCrediticio />}
+          {/* {activeTab === "historialCrediticio" && <HistorialCrediticio />} */}
         </main>
       </div>
     </div>
