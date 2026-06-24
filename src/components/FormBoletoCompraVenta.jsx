@@ -43,6 +43,8 @@ const ANIOS_AUTOS = Array.from({ length: 2026 - 1990 + 1 }, (_, i) =>
 
 export default function FormBoletoCompraVenta({ tipo }) {
   const [loading, setLoading] = useState(false);
+  const tipos_datero = ["venta", "consignacion"];
+
   const [data, setData] = useState({
     vendedorNombre: "",
     vendedorDni: "",
@@ -65,16 +67,19 @@ export default function FormBoletoCompraVenta({ tipo }) {
     precio: "",
     formaPago: "",
     observacionesAuto: "",
+    obs2: "",
+    obs3: "",
+    obs4: "",
 
     // Variables para el PDF
     libreDeudaDia: "",
     libreDeudaMes: "",
     firmaDia: "",
     firmaMes: "",
+    firmaAnio: "",
     fechaNac: "",
 
     // Variables auxiliares para los selectores de fecha
-    _fechaLibreDeuda: "",
     _fechaFirma: "",
     _fechaNacDate: "",
 
@@ -120,11 +125,9 @@ export default function FormBoletoCompraVenta({ tipo }) {
       observacionesAuto: "4 cubiertas nuevas",
 
       // Fechas de prueba sincronizadas
-      libreDeudaDia: "15",
-      libreDeudaMes: "10",
-      _fechaLibreDeuda: "2026-10-15",
       firmaDia: "20",
       firmaMes: "10",
+      firmaAnio: "2026", // <--- ACÁ ESTABA EL ERROR: Faltaba el año
       _fechaFirma: "2026-10-20",
       fechaNac: "15/05/1990",
       _fechaNacDate: "1990-05-15",
@@ -193,6 +196,14 @@ export default function FormBoletoCompraVenta({ tipo }) {
         aBoleto.download = `boleto_${data.vehiculoDominio || "borrador"}_consignación.pdf`;
         aBoleto.click();
         URL.revokeObjectURL(urlBoleto);
+
+        const blobDatero = await pdf(<DateroPDF data={data} />).toBlob();
+        const urlDatero = URL.createObjectURL(blobDatero);
+        const aDatero = document.createElement("a");
+        aDatero.href = urlDatero;
+        aDatero.download = `datero_${data.titular || "borrador"}.pdf`;
+        aDatero.click();
+        URL.revokeObjectURL(urlDatero);
       }
     } catch (error) {
       console.error("Error generando PDFs:", error);
@@ -481,35 +492,6 @@ export default function FormBoletoCompraVenta({ tipo }) {
             Fechas de la Operación
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Calendario Libre Deuda */}
-            <div className="space-y-2">
-              <Label className="font-semibold">Fecha Libre Deuda</Label>
-              <Input
-                type="date"
-                value={data._fechaLibreDeuda || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val) {
-                    const [, month, day] = val.split("-");
-                    setData({
-                      ...data,
-                      libreDeudaDia: day,
-                      libreDeudaMes: month,
-                      _fechaLibreDeuda: val,
-                    });
-                  } else {
-                    setData({
-                      ...data,
-                      libreDeudaDia: "",
-                      libreDeudaMes: "",
-                      _fechaLibreDeuda: "",
-                    });
-                  }
-                }}
-                className="bg-white focus-visible:ring-red-600"
-              />
-            </div>
-
             {/* Calendario Firma */}
             <div className="space-y-2">
               <Label className="font-semibold">Fecha de Firma</Label>
@@ -519,11 +501,12 @@ export default function FormBoletoCompraVenta({ tipo }) {
                 onChange={(e) => {
                   const val = e.target.value;
                   if (val) {
-                    const [, month, day] = val.split("-");
+                    const [year, month, day] = val.split("-");
                     setData({
                       ...data,
                       firmaDia: day,
                       firmaMes: month,
+                      firmaAnio: year,
                       _fechaFirma: val,
                     });
                   } else {
@@ -531,6 +514,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
                       ...data,
                       firmaDia: "",
                       firmaMes: "",
+                      firmaAnio: "",
                       _fechaFirma: "",
                     });
                   }
@@ -538,24 +522,56 @@ export default function FormBoletoCompraVenta({ tipo }) {
                 className="bg-white focus-visible:ring-red-600"
               />
             </div>
-            <div className="space-y-2">
-              <Label className="font-semibold">
-                Observaciones del vehiculo (NO representadas en el boleto)
-              </Label>
-              <TextareaAutosize
-                name="observacionesAuto"
-                value={data.observacionesAuto || ""}
-                onChange={handleChange}
-                minRows={1}
-                className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 resize-none"
-              />
-            </div>
+
+            {tipo === "compra" ? (
+              <>
+                <div className="space-y-2">
+                  <TextareaAutosize
+                    name="obs2"
+                    value={data.obs2 || ""}
+                    onChange={handleChange}
+                    minRows={1}
+                    className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <TextareaAutosize
+                    name="obs3"
+                    value={data.obs3 || ""}
+                    onChange={handleChange}
+                    minRows={1}
+                    className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 resize-none"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <TextareaAutosize
+                    name="obs4"
+                    value={data.obs4 || ""}
+                    onChange={handleChange}
+                    minRows={1}
+                    className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 resize-none"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <Label className="font-semibold">Observaciones</Label>
+                <TextareaAutosize
+                  name="observacionesAuto"
+                  value={data.observacionesAuto || ""}
+                  onChange={handleChange}
+                  minRows={1}
+                  className="flex w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 resize-none"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* BLOQUE DATERO */}
-      {tipo === "venta" && (
+      {tipos_datero.includes(tipo) && (
         <div className="space-y-4 bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200 border-t-4 border-t-black">
           <h3 className="font-bold text-red-600 uppercase tracking-wide">
             Datos Adicionales (Datero Agencia)

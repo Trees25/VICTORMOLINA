@@ -9,6 +9,8 @@ import {
   Line, // Importación nueva
 } from "@react-pdf/renderer";
 
+import Logo from "../assets/logo.jpeg";
+
 const styles = StyleSheet.create({
   page: {
     padding: 20,
@@ -106,6 +108,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#000000",
   },
+  headerImage: {
+    height: 70, // Ajustá este valor según las proporciones de tu imagen
+    objectFit: "contain", // Evita que la imagen se estire o deforme
+  },
 });
 
 export const BoletoCompra = ({ data, logoUrl }) => (
@@ -122,7 +128,7 @@ export const BoletoCompra = ({ data, logoUrl }) => (
             />
           )}
           <View style={styles.headerTextContainer}>
-            <Text style={styles.header}>VICTOR MOLINA AUTOMOTORES</Text>
+            <Image src={Logo} style={styles.headerImage} />
             <Text style={styles.subHeader}>BOLETO DE COMPRA/VENTA</Text>
           </View>
         </View>
@@ -190,8 +196,9 @@ export const BoletoCompra = ({ data, logoUrl }) => (
         <Text style={styles.paragraph}>
           En San Juan a los{" "}
           <Text style={styles.bold}>{data.firmaDia || "……"}</Text> días del mes
-          de <Text style={styles.bold}>{data.firmaMes || "…………"}</Text> de 2026,
-          se firman dos ejemplares de un mismo tenor y a un solo efecto.
+          de <Text style={styles.bold}>{data.firmaMes || "…………"}</Text> de{" "}
+          <Text style={styles.bold}>{data.firmaAnio || "…………"}</Text>, se firman
+          dos ejemplares de un mismo tenor y a un solo efecto.
         </Text>
 
         <View style={styles.observacionesContainer}>

@@ -9,6 +9,7 @@ import {
   Line,
 } from "@react-pdf/renderer";
 
+import Logo from "../assets/logo.jpeg";
 import { numeroALetras } from "@/lib/numeros";
 
 const styles = StyleSheet.create({
@@ -107,6 +108,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#000000",
   },
+  headerImage: {
+    height: 70, // Ajustá este valor según las proporciones de tu imagen
+    objectFit: "contain", // Evita que la imagen se estire o deforme
+  },
 });
 
 const ahora = new Date();
@@ -125,10 +130,8 @@ export const BoletoConsignación = ({ data, logoUrl }) => (
             />
           )}
           <View style={styles.headerTextContainer}>
-            <Text style={styles.header}>VICTOR MOLINA AUTOMOTORES</Text>
-            <Text style={styles.subHeader}>
-              BOLETO DE VENTA EN CONSIGNACIÓN
-            </Text>
+            <Image src={Logo} style={styles.headerImage} />
+            <Text style={styles.subHeader}>BOLETO DE COMPRA/VENTA</Text>
           </View>
         </View>
 
@@ -228,8 +231,9 @@ export const BoletoConsignación = ({ data, logoUrl }) => (
         <Text style={styles.paragraph}>
           En San Juan a los{" "}
           <Text style={styles.bold}>{data.firmaDia || "……"}</Text> días del mes
-          de <Text style={styles.bold}>{data.firmaMes || "…………"}</Text> de 2026,
-          se firman tres ejemplares de un mismo tenor.
+          de <Text style={styles.bold}>{data.firmaMes || "…………"}</Text> de{" "}
+          <Text style={styles.bold}>{data.firmaAnio || "…………"}</Text>, se firman
+          tres ejemplares de un mismo tenor.
         </Text>
 
         {/* Espacio en blanco con línea cruzada - ABSOLUTO PARA LLENAR */}

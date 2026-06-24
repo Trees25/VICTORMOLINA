@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  // Manejo de la petición OPTIONS para los navegadores (CORS Preflight)
+  // Manejo del preflight de CORS para el navegador
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -22,30 +22,64 @@ Deno.serve(async (req) => {
       });
     }
 
-    const bcraUrl = `https://api.bcra.gob.ar/centraldedeudores/v1.0/Deudas/${cuil}`;
-    const bcraResponse = await fetch(bcraUrl);
+    // URLs de las 3 fuentes de datos
+    const bcraDeudasUrl = `https://api.bcra.gob.ar/centraldedeudores/v1.0/Deudas/${cuil}`;
+    const bcraChequesUrl = `https://api.bcra.gob.ar/centraldedeudores/v1.0/Deudas/ChequesRechazados/${cuil}`;
+    const afipUrl = `https://afip.tangofactura.com/Rest/GetContribuyenteFull?cuit=${cuil}`;
 
-    // El BCRA devuelve 404 cuando la persona NO tiene deudas registradas
-    if (bcraResponse.status === 404) {
-      return new Response(
-        JSON.stringify({ status: 404, message: "Sin deudas activas" }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Ejecutamos las 3 peticiones en paralelo para que la respuesta sea instantánea
+    const [resDeudas, resCheques, resAfip] = await Promise.all([
+      fetch(bcraDeudasUrl),
+      fetch(bcraChequesUrl),
+      fetch(afipUrl, {
+        headers: {
+          // Camuflaje: Le decimos a la API que somos Google Chrome, no un servidor
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          Accept: "application/json, text/plain, */*",
         },
-      );
+      }),
+    ]);
+
+    // Parseamos las respuestas (si es 404, res.ok es false y queda en null)
+    const dataDeudas = resDeudas.ok ? await resDeudas.json() : null;
+    const dataCheques = resCheques.ok ? await resCheques.json() : null;
+
+    let dataAfip = null;
+    if (resAfip.ok) {
+      try {
+        const afipJson = await resAfip.json();
+        // Verificamos que la API no haya devuelto un error interno en formato JSON
+        if (!afipJson.errorContribuyente) {
+          dataAfip = afipJson;
+        }
+      } catch (e) {
+        console.error("Error leyendo JSON de AFIP:", e);
+      }
     }
 
-    if (!bcraResponse.ok) {
-      throw new Error(`Error del BCRA: ${bcraResponse.status}`);
+    // PLAN B: Respaldo infalible para el nombre desde la base del BCRA
+    let nombreRespaldo = null;
+    if (dataDeudas?.results?.denominacion) {
+      nombreRespaldo = dataDeudas.results.denominacion;
+    } else if (dataCheques?.results?.denominacion) {
+      nombreRespaldo = dataCheques.results.denominacion;
     }
 
-    const data = await bcraResponse.json();
-
-    return new Response(JSON.stringify({ status: 200, data }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    // Empaquetamos todo y lo mandamos al frontend
+    return new Response(
+      JSON.stringify({
+        status: 200,
+        deudas: dataDeudas,
+        cheques: dataCheques,
+        afip: dataAfip,
+        nombreRespaldo: nombreRespaldo,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,

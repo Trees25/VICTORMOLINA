@@ -57,18 +57,15 @@ const COLORES_MARCAS = [
 export default function Dashboard() {
   const [operacionesRaw, setOperacionesRaw] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [operacionSeleccionada, setOperacionSeleccionada] = useState(null);
 
-  // Estado para el modal de detalles del vehículo
-  const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
-
-  // Estado de los filtros actualizado
   const [filtros, setFiltros] = useState({
     fechaDesde: "",
     fechaHasta: "",
     tipo: "todos",
     marca: "todas",
     formaPago: "todas",
-    patente: "", // Nuevo filtro
+    patente: "",
   });
 
   useEffect(() => {
@@ -78,12 +75,11 @@ export default function Dashboard() {
   const fetchOperaciones = async () => {
     setLoading(true);
     try {
-      // Ahora traemos todos los datos útiles del vehículo
       const { data, error } = await supabase
         .from("operaciones")
         .select(
           `
-          id, tipo, monto, forma_pago, fecha_firma, estado,
+          id, tipo, monto, forma_pago, fecha_firma, estado, otras_observaciones,
           vehiculos (id, dominio, marca, modelo, tipo, anio, motor, chasis, inscripcion_inicial, observaciones)
         `,
         )
@@ -133,7 +129,6 @@ export default function Dashboard() {
     return [...new Set(formas)].sort();
   }, [operacionesRaw]);
 
-  // Aplicación de filtros
   const operacionesFiltradas = useMemo(() => {
     return operacionesRaw.filter((op) => {
       if (!op.fecha_firma) return false;
@@ -148,7 +143,6 @@ export default function Dashboard() {
       if (filtros.formaPago !== "todas" && op.forma_pago !== filtros.formaPago)
         return false;
 
-      // Filtro por patente (dominio)
       if (filtros.patente && op.vehiculos?.dominio) {
         if (
           !op.vehiculos.dominio
@@ -163,22 +157,25 @@ export default function Dashboard() {
     });
   }, [operacionesRaw, filtros]);
 
-  // Cálculos de KPIs
   const totalVentas = operacionesFiltradas
     .filter((op) => op.tipo === "venta")
     .reduce((acc, op) => acc + op.monto, 0);
   const totalCompras = operacionesFiltradas
     .filter((op) => op.tipo === "compra")
     .reduce((acc, op) => acc + op.monto, 0);
+
+  // Agrupa ambas consignaciones para el KPI
   const totalConsignaciones = operacionesFiltradas.filter(
-    (op) => op.tipo === "consignacion",
+    (op) => op.tipo === "consignacion" || op.tipo === "contrato_consignacion",
   ).length;
+
   const balance = totalVentas - totalCompras;
 
-  // Datos para Gráfico de Barras
   const datosGraficoBarras = useMemo(() => {
     const agrupado = operacionesFiltradas.reduce((acc, op) => {
-      if (op.tipo === "consignacion") return acc;
+      // Excluye ambos tipos de consignación del flujo de caja
+      if (op.tipo === "consignacion" || op.tipo === "contrato_consignacion")
+        return acc;
 
       const mesAnio = new Date(op.fecha_firma).toLocaleDateString("es-AR", {
         month: "short",
@@ -201,7 +198,6 @@ export default function Dashboard() {
     });
   }, [operacionesFiltradas]);
 
-  // Datos para Gráfico de Torta
   const datosGraficoTorta = useMemo(() => {
     const agrupado = operacionesFiltradas.reduce((acc, op) => {
       const marca = op.vehiculos?.marca || "Desconocida";
@@ -243,12 +239,11 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-8 space-y-6 bg-gray-50 min-h-screen relative">
-      {/* MODAL DETALLES DEL VEHÍCULO */}
-      {vehiculoSeleccionado && (
+      {operacionSeleccionada && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg relative animate-in fade-in zoom-in duration-200">
             <button
-              onClick={() => setVehiculoSeleccionado(null)}
+              onClick={() => setOperacionSeleccionada(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors"
             >
               <X className="h-6 w-6" />
@@ -261,60 +256,72 @@ export default function Dashboard() {
               <div>
                 <p className="text-gray-500 font-medium">Dominio (Patente)</p>
                 <p className="font-bold text-lg uppercase text-gray-900">
-                  {vehiculoSeleccionado.dominio}
+                  {operacionSeleccionada.vehiculos?.dominio}
                 </p>
               </div>
               <div>
                 <p className="text-gray-500 font-medium">Marca y Modelo</p>
                 <p className="font-bold text-gray-900">
-                  {vehiculoSeleccionado.marca} {vehiculoSeleccionado.modelo}
+                  {operacionSeleccionada.vehiculos?.marca}{" "}
+                  {operacionSeleccionada.vehiculos?.modelo}
                 </p>
               </div>
               <div>
                 <p className="text-gray-500 font-medium">Año</p>
                 <p className="font-semibold text-gray-900">
-                  {vehiculoSeleccionado.anio || "-"}
+                  {operacionSeleccionada.vehiculos?.anio || "-"}
                 </p>
               </div>
               <div>
                 <p className="text-gray-500 font-medium">Tipo</p>
                 <p className="font-semibold text-gray-900">
-                  {vehiculoSeleccionado.tipo || "-"}
+                  {operacionSeleccionada.vehiculos?.tipo || "-"}
                 </p>
               </div>
               <div className="col-span-2 bg-gray-50 p-3 rounded-lg border">
                 <p className="text-gray-500 font-medium mb-1">N° de Motor</p>
                 <p className="font-mono text-gray-900 uppercase">
-                  {vehiculoSeleccionado.motor || "No registrado"}
+                  {operacionSeleccionada.vehiculos?.motor || "No registrado"}
                 </p>
               </div>
               <div className="col-span-2 bg-gray-50 p-3 rounded-lg border">
                 <p className="text-gray-500 font-medium mb-1">N° de Chasis</p>
                 <p className="font-mono text-gray-900 uppercase">
-                  {vehiculoSeleccionado.chasis || "No registrado"}
+                  {operacionSeleccionada.vehiculos?.chasis || "No registrado"}
                 </p>
               </div>
-              {vehiculoSeleccionado.observaciones && (
+
+              {operacionSeleccionada.vehiculos?.observaciones && (
                 <div className="col-span-2 bg-gray-50 p-3 rounded-lg border">
                   <p className="text-gray-500 font-medium mb-1">
                     Observaciones
                   </p>
                   <p className="font-mono text-gray-900 uppercase">
-                    {vehiculoSeleccionado.observaciones || "No registrado"}
+                    {operacionSeleccionada.vehiculos.observaciones}
                   </p>
                 </div>
               )}
 
+              <div className="col-span-2 bg-gray-50 p-3 rounded-lg border">
+                <p className="text-gray-500 font-medium mb-1">
+                  Otras Observaciones (Historial de Estados)
+                </p>
+                <p className="font-mono text-gray-900 uppercase">
+                  {operacionSeleccionada.otras_observaciones ||
+                    "Sin observaciones particulares."}
+                </p>
+              </div>
+
               <div className="col-span-2">
                 <p className="text-gray-500 font-medium">Inscripción Inicial</p>
                 <p className="font-semibold text-gray-900">
-                  {vehiculoSeleccionado.inscripcion_inicial || "-"}
+                  {operacionSeleccionada.vehiculos?.inscripcion_inicial || "-"}
                 </p>
               </div>
             </div>
             <div className="mt-6 pt-4 border-t text-right">
               <Button
-                onClick={() => setVehiculoSeleccionado(null)}
+                onClick={() => setOperacionSeleccionada(null)}
                 variant="outline"
               >
                 Cerrar
@@ -337,7 +344,7 @@ export default function Dashboard() {
         </Button>
       </div>
 
-      {/* BARRA DE FILTROS - 6 Columnas */}
+      {/* BARRA DE FILTROS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
         <div className="space-y-1">
           <label className="text-xs font-semibold text-gray-500 uppercase">
@@ -390,7 +397,10 @@ export default function Dashboard() {
               <SelectItem value="todos">Todas</SelectItem>
               <SelectItem value="compra">Compras</SelectItem>
               <SelectItem value="venta">Ventas</SelectItem>
-              <SelectItem value="consignacion">Consignaciones</SelectItem>
+              <SelectItem value="consignacion">Consig. Normales</SelectItem>
+              <SelectItem value="contrato_consignacion">
+                Contratos Consig.
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -438,7 +448,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* TARJETAS DE MÉTRICAS (KPIs) */}
+      {/* TARJETAS DE KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="shadow-sm border-gray-200">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -600,7 +610,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* TABLA DETALLADA CON SCROLL */}
+      {/* TABLA DETALLADA */}
       <Card className="shadow-sm border-gray-200 bg-white">
         <CardHeader>
           <CardTitle>
@@ -629,7 +639,7 @@ export default function Dashboard() {
                       colSpan={6}
                       className="text-center text-gray-500 py-10"
                     >
-                      No se encontraron operaciones con los filtros actuales.
+                      No se encontraron operaciones.
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -643,15 +653,9 @@ export default function Dashboard() {
                       </TableCell>
                       <TableCell>
                         <span
-                          className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider whitespace-nowrap ${
-                            op.tipo === "venta"
-                              ? "bg-green-100 text-green-800"
-                              : op.tipo === "compra"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-orange-100 text-orange-800"
-                          }`}
+                          className={`px-2 py-1 rounded text-xs font-bold uppercase tracking-wider whitespace-nowrap ${op.tipo === "venta" ? "bg-green-100 text-green-800" : op.tipo === "compra" ? "bg-red-100 text-red-800" : op.tipo === "contrato_consignacion" ? "bg-purple-100 text-purple-800" : "bg-orange-100 text-orange-800"}`}
                         >
-                          {op.tipo}
+                          {op.tipo.replace("_", " ")}
                         </span>
                       </TableCell>
                       <TableCell className="font-medium text-gray-900">
@@ -668,25 +672,22 @@ export default function Dashboard() {
                         {op.forma_pago || "-"}
                       </TableCell>
                       <TableCell className="text-right font-bold text-gray-900 whitespace-nowrap">
-                        {op.tipo === "consignacion"
-                          ? "-"
+                        {op.tipo === "consignacion" ||
+                        op.tipo === "contrato_consignacion"
+                          ? `Retiro: ${formatearMoneda(op.monto)}`
                           : formatearMoneda(op.monto)}
                       </TableCell>
                       <TableCell className="text-center">
                         <div className="flex justify-center gap-1">
-                          {/* Botón para ver los detalles del auto */}
                           <Button
                             variant="ghost"
                             size="icon"
                             className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                            onClick={() =>
-                              setVehiculoSeleccionado(op.vehiculos)
-                            }
+                            onClick={() => setOperacionSeleccionada(op)}
                             title="Ver detalles del vehículo"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          {/* Botón para eliminar */}
                           <Button
                             variant="ghost"
                             size="icon"
