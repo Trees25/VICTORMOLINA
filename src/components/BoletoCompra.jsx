@@ -9,7 +9,7 @@ import {
   Line, // Importación nueva
 } from "@react-pdf/renderer";
 
-import Logo from "../assets/logo.jpeg";
+import Logo from "../assets/logoRecortado.jpeg";
 
 const styles = StyleSheet.create({
   page: {
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
   headerImage: {
-    height: 70, // Ajustá este valor según las proporciones de tu imagen
+    height: 45, // Ajustá este valor según las proporciones de tu imagen
     objectFit: "contain", // Evita que la imagen se estire o deforme
   },
 });
