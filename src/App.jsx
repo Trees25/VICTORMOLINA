@@ -12,7 +12,7 @@ import logoAgencia from "@/assets/logo.jpeg";
 function App() {
   const [session, setSession] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
-  const [activeTab, setActiveTab] = useState("compra");
+  const [activeTab, setActiveTab] = useState("venta");
 
   // Escuchar el estado de autenticación
   useEffect(() => {
@@ -85,16 +85,6 @@ function App() {
         <nav className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
           <Button
             className={
-              activeTab === "compra"
-                ? "bg-red-600 hover:bg-red-700 text-white font-bold shadow-md w-full sm:w-auto"
-                : "bg-white text-black border-2 border-gray-300 hover:border-red-600 hover:text-red-600 w-full sm:w-auto"
-            }
-            onClick={() => setActiveTab("compra")}
-          >
-            Boleto de Compra
-          </Button>
-          <Button
-            className={
               activeTab === "venta"
                 ? "bg-red-600 hover:bg-red-700 text-white font-bold shadow-md w-full sm:w-auto"
                 : "bg-white text-black border-2 border-gray-300 hover:border-red-600 hover:text-red-600 w-full sm:w-auto"
@@ -103,6 +93,17 @@ function App() {
           >
             Boleto de Venta
           </Button>
+          <Button
+            className={
+              activeTab === "compra"
+                ? "bg-red-600 hover:bg-red-700 text-white font-bold shadow-md w-full sm:w-auto"
+                : "bg-white text-black border-2 border-gray-300 hover:border-red-600 hover:text-red-600 w-full sm:w-auto"
+            }
+            onClick={() => setActiveTab("compra")}
+          >
+            Boleto de Compra
+          </Button>
+
           <Button
             className={
               activeTab === "consignacion"
