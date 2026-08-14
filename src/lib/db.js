@@ -256,8 +256,12 @@ export async function guardarOperacionEnBD(data, tipoOperacion) {
 
     // 4. Formatear Fecha SQL (YYYY-MM-DD)
     const anioFirma = data.firmaAnio || "2026";
-    const mesFirma = data.firmaMes?.toString().padStart(2, "0") || "01";
-    const diaFirma = data.firmaDia?.toString().padStart(2, "0") || "01";
+    const mesFirma = data.firmaMes
+      ? String(data.firmaMes).padStart(2, "0")
+      : "01";
+    const diaFirma = data.firmaDia
+      ? String(data.firmaDia).padStart(2, "0")
+      : "01";
 
     // 5. Insertar Registro en la base de datos
     const { error: errOperacion } = await supabase.from("operaciones").insert({

@@ -377,7 +377,7 @@ export default function FormBoletoCompraVenta({ tipo }) {
               name="vehiculoDominio"
               value={data.vehiculoDominio || ""}
               onChange={handleChange}
-              className="bg-white border-red-300 focus-visible:ring-red-600 uppercase"
+              className="bg-white  focus-visible:ring-red-600 uppercase"
             />
           </div>
           <div className="space-y-2">
